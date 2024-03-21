@@ -139,7 +139,7 @@ def place_order(offer_id, cuda_max_good, ethereum_address):
         "image": image,
         "disk": 3,
         "label": "Xenobi_LIMIT_ORDER",
-        "onstart": f"docker run --gpus all --restart always {docker_options} vastai/vast-docker:57decc42627e613ced06ec7eb79f6299",
+        "onstart": f"docker run --gpus all --restart always {docker_options} {image}",
     }
     headers = {'Accept': 'application/json'}
     response = requests.put(url, headers=headers, json=payload)
