@@ -125,17 +125,10 @@ def search_gpu(successful_orders):
 
 def place_order(offer_id, cuda_max_good, ethereum_address):
     url = f"https://console.vast.ai/api/v0/asks/{offer_id}/?api_key={api_key}"
-    if cuda_max_good >= 12:
-        image = "nvidia/cuda:12.0.1-devel-ubuntu20.04"
-    else:
-        image = "nvidia/cuda:11.1.1-devel-ubuntu20.04"
-
-    # Customize docker options with user-provided Ethereum address
     docker_options = f"-e ADDR={ethereum_address}"
-    
     payload = {
         "client_id": "me",
-        "image": image,
+        "image": "smit1237/xengpuminer:vast",
         "disk": 3,
         "label": "Xenobi_LIMIT_ORDER",
         "onstart": f"docker run --gpus all --restart always {docker_options} vastai/vast-docker:57decc42627e613ced06ec7eb79f6299",
