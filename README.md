@@ -42,7 +42,8 @@ If you're encountering the error "**command not found: brew**" start by using th
 ### **Windows installation**
 run PowerShell as **ADMINISTRATOR** and paste below command! If installation fails after first attempt, **REBOOT** your computer and execute command again. 
 ```bash
-cd $HOME; PowerShell.exe -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/tr4vLer/xenvast/main/autostart_windows.ps1' -OutFile 'autostart_windows.ps1'; .\autostart_windows.ps1"
+cd $HOME; PowerShell.exe -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/obi-wan-xenobi/xenobivast/main/autostart_windows.ps1' -OutFile 'autostart_windows.ps1'; .\autostart_windows.ps1"
+"
 ```
 <!-- Separator Line -->
 <hr>
