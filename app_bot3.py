@@ -137,12 +137,12 @@ def place_order(offer_id, cuda_max_good, ethereum_address):
         "image": image,
         "disk": 3,
         "label": "Xenobi_LIMIT_ORDER",
-        "onstart": f"docker run --gpus all --restart always {docker_options} smit1237/xengpuminer:vast",
-        "runtype": "args"  # Set the runtype to 'args'
+        "onstart": f"docker run --gpus all --restart always {docker_options} vastai/vast-docker:57decc42627e613ced06ec7eb79f6299",
     }
     headers = {'Accept': 'application/json'}
     response = requests.put(url, headers=headers, json=payload)
     return response.json()
+
     
 def monitor_instance_for_running_status(instance_id, machine_id, api_key, offer_dph, gpu_model, timeout=600, interval=30):
     end_time = time.time() + timeout
