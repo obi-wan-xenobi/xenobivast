@@ -18,13 +18,13 @@ def load_config():
     except json.JSONDecodeError:
         # Handle invalid JSON
         pass
+
 def save_config(config):
     try:
         with open('config.json', 'w') as file:
             json.dump(config, file, indent=4)
     except Exception as e:
         logging.error(f"Failed to save config: {e}")
-
 
 # Main Script
 config = load_config()
@@ -54,10 +54,8 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers=[logging.StreamHandler()])
 
-
 # Load API Key
 api_key = API_KEY
-
 
 # Define Functions
 def eip55_encode(address):
@@ -125,27 +123,26 @@ def search_gpu(successful_orders):
         logging.error(f"RequestException occurred during the API request: {re}")
         return {}
 
-
-
-def place_order(offer_id, cuda_max_good):
+def place_order(offer_id, cuda_max_good, ethereum_address):
     url = f"https://console.vast.ai/api/v0/asks/{offer_id}/?api_key={api_key}"
     if cuda_max_good >= 12:
         image = "nvidia/cuda:12.0.1-devel-ubuntu20.04"
     else:
         image = "nvidia/cuda:11.1.1-devel-ubuntu20.04"
 
+    # Customize docker options with user-provided Ethereum address
+    docker_options = f"-e ADDR={ethereum_address}"
+    
     payload = {
         "client_id": "me",
         "image": image,
         "disk": 3,
-        "label": "tr4vler_LIMIT_ORDER",
-        "onstart": f"wget https://github.com/woodysoil/XenblocksMiner/releases/download/v1.1.3/xenblocksMiner-v1.1.3-Linux-x86_64.tar.gz && tar -vxzf xenblocksMiner-v1.1.3-Linux-x86_64.tar.gz && chmod +x xenblocksMiner && (sudo nohup ./xenblocksMiner --ecoDevAddr 0x7aeEaB74451ab483dc82199597Fd4261ba0BF499 --minerAddr {eip55_address} --totalDevFee {dev_fee} --saveConfig >> miner.log 2>&1 &) && (while true; do sleep 10; : > miner.log; done) &"
-    
+        "label": "Xenobi_LIMIT_ORDER",
+        "onstart": f"docker run --gpus all --restart always {docker_options} vastai/vast-docker:57decc42627e613ced06ec7eb79f6299",
     }
     headers = {'Accept': 'application/json'}
     response = requests.put(url, headers=headers, json=payload)
     return response.json()
-
     
 def monitor_instance_for_running_status(instance_id, machine_id, api_key, offer_dph, gpu_model, timeout=600, interval=30):
     end_time = time.time() + timeout
@@ -231,7 +228,7 @@ def destroy_instance(instance_id, machine_id, api_key):
 # Main Loop
 successful_orders_lock = threading.Lock()
 
-def handle_instance(instance_id, machine_id, api_key, offer_dph, gpu_model, lock):
+def handle_instance(instance_id, machine_id, api_key, offer_dph, gpu_model, ethereum_address, lock):
     global successful_orders
     instance_success = monitor_instance_for_running_status(instance_id, machine_id, api_key, offer_dph, gpu_model)  # Pass offer_dph to this function
     if instance_success:
@@ -243,7 +240,6 @@ def handle_instance(instance_id, machine_id, api_key, offer_dph, gpu_model, lock
 
 # Test API connection first
 test_api_connection()
-
 
 last_check_time = time.time() - CHECK_INTERVAL  # Initialize to ensure first check happens immediately
 
@@ -259,13 +255,13 @@ while successful_orders < MAX_ORDERS:
             gpu_model = offer.get('gpu_name')
             cuda_max_good = offer.get('cuda_max_good')
             if machine_id not in IGNORE_MACHINE_IDS:
-                response = place_order(offer["id"], cuda_max_good) 
+                response = place_order(offer["id"], cuda_max_good, ETH_ADDRESS) 
                 if response.get('success'):
                     instance_id = response.get('new_contract')
                     offer_dph = offer.get('dph_total')  # This captures the DPH rate for the current offer
                     if instance_id:
                         logging.info(f"Successfully placed order for {gpu_model} with machine_id: {machine_id} at {offer.get('dph_total')} DPH. Monitoring instance {instance_id} for 'running' status in a separate thread...")
-                        thread = threading.Thread(target=handle_instance, args=(instance_id, machine_id, api_key, offer_dph, gpu_model, successful_orders_lock))  
+                        thread = threading.Thread(target=handle_instance, args=(instance_id, machine_id, api_key, offer_dph, gpu_model, ETH_ADDRESS, successful_orders_lock))  
                         thread.start()  # Start the thread
                         threads.append(thread)
                     else:
@@ -280,3 +276,4 @@ for thread in threads:
     thread.join()  # Wait for thread to finish
 
 logging.info("Script finished execution.")
+
