@@ -1,4 +1,3 @@
-from requests.exceptions import ChunkedEncodingError
 import requests
 import logging
 import time
@@ -116,7 +115,7 @@ def search_gpu(successful_orders):
             logging.error(f"Offers check failed. Status code: {response.status_code}. Response: {response.text}")
             return {}
 
-    except ChunkedEncodingError as ce:
+    except requests.exceptions.ChunkedEncodingError as ce:
         logging.error(f"ChunkedEncodingError occurred during the API request: {ce}")
         return {}
     except requests.exceptions.RequestException as re:
@@ -125,13 +124,21 @@ def search_gpu(successful_orders):
 
 def place_order(offer_id, cuda_max_good, ethereum_address):
     url = f"https://console.vast.ai/api/v0/asks/{offer_id}/?api_key={api_key}"
+    if cuda_max_good >= 12:
+        image = "nvidia/cuda:12.0.1-devel-ubuntu20.04"
+    else:
+        image = "nvidia/cuda:11.1.1-devel-ubuntu20.04"
+
+    # Customize docker options with user-provided Ethereum address
     docker_options = f"-e ADDR={ethereum_address}"
+    
     payload = {
         "client_id": "me",
-        "image": "smit1237/xengpuminer:vast",
+        "image": image,
         "disk": 3,
         "label": "Xenobi_LIMIT_ORDER",
-        "onstart": f"docker run --gpus all --restart always {docker_options} vastai/vast-docker:57decc42627e613ced06ec7eb79f6299",
+        "onstart": f"docker run --gpus all --restart always {docker_options} smit1237/xengpuminer:vast",
+        "runtype": "args"  # Set the runtype to 'args'
     }
     headers = {'Accept': 'application/json'}
     response = requests.put(url, headers=headers, json=payload)
