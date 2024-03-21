@@ -126,24 +126,25 @@ def place_order(offer_id, cuda_max_good, ethereum_address):
     url = f"https://console.vast.ai/api/v0/asks/{offer_id}/?api_key={api_key}"
     
     # Set Docker image based on CUDA version
-    if cuda_max_good >= 12:
-        image = "smit1237/xengpuminer:vast"
-    else:
-        image = "smit1237/xengpuminer:vast"
+    image = "smit1237/xengpuminer:vast"
 
     # Customize docker options with user-provided Ethereum address
     docker_options = f"-e ADDR={ethereum_address}"
     
+    # Construct the onstart command with docker run and environment variable
+    onstart_command = f"docker run --gpus all --restart always {docker_options} {image}"
+    
     payload = {
         "client_id": "me",
         "image": image,
-        "disk": 3,
+        "disk": 7.94,
         "label": "Xenobi_LIMIT_ORDER",
-        "onstart": f"docker run --gpus all --restart always {docker_options} {image}",
+        "onstart": onstart_command,
     }
     headers = {'Accept': 'application/json'}
     response = requests.put(url, headers=headers, json=payload)
     return response.json()
+
 
 
     
