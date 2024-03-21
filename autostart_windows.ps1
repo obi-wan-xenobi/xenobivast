@@ -55,13 +55,13 @@ pip install requests eth-utils paramiko prettytable flask flask-socketio Flask-B
 
 # Clone the repository and build the project
 Write-Host "Cloning the repository and building the project..."
-git clone https://github.com/tr4vLer/xenvast.git
+git clone https://github.com/obi-wan-xenobi/xenobivast.git
 
-# Set the current location to the xenvast directory
-Set-Location xenvast
+# Set the current location to the xenobivast directory
+Set-Location xenobivast
 
-# Store the absolute path to the xenvast directory
-$XENVAST_DIR = Get-Location
+# Store the absolute path to the xenobivast directory
+$XENOBIVAST_DIR = Get-Location
 
 # Create the WScript.Shell COM object to make the shortcut
 $WScriptShell = New-Object -ComObject WScript.Shell
@@ -71,16 +71,14 @@ $Shortcut = $WScriptShell.CreateShortcut("$([System.Environment]::GetFolderPath(
 
 # Set the properties of the shortcut if the shortcut object is valid
 $Shortcut.TargetPath = "cmd.exe"
-$Shortcut.Arguments = "/c `"cd $XENVAST_DIR && powershell.exe -ExecutionPolicy Bypass -File start_app.ps1`""
+$Shortcut.Arguments = "/c `"cd $XENOBIVAST_DIR && powershell.exe -ExecutionPolicy Bypass -File start_app.ps1`""
 
-$Shortcut.IconLocation = "$XENVAST_DIR\static\logo.ico"
+$Shortcut.IconLocation = "$XENOBIVAST_DIR\static\logo.ico"
 $Shortcut.Save()
 
 Write-Host "Desktop shortcut created successfully."
 
-
 # Run the application
-Start-Process "cmd.exe" -ArgumentList "/c cd `"$XENVAST_DIR`" && powershell.exe -ExecutionPolicy Bypass -File `"$XENVAST_DIR\start_app.ps1`""
-
+Start-Process "cmd.exe" -ArgumentList "/c cd `"$XENOBIVAST_DIR`" && powershell.exe -ExecutionPolicy Bypass -File `"$XENOBIVAST_DIR\start_app.ps1`""
 
 Write-Host "Installation complete."
